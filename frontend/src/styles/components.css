@@ -50,11 +50,19 @@
   background: var(--ok);
   color: var(--on);
 }
+.btn--danger {
+  background: #8d1022;
+  color: #ffffff;
+}
 .btn--ghost {
   background: var(--surface);
   color: var(--fg);
   border-color: var(--line2);
   box-shadow: none;
+}
+.mapstyle__exit-actions {
+  display: grid;
+  gap: 10px;
 }
 .spinner {
   width: 1.1em;

@@ -776,6 +776,14 @@ export const DE_EXTRA = new Map([
   ['Scan line', 'Scanlinie'],
   ['Soft pulse', 'Weicher Puls'],
   ['Customisation', 'Anpassung'],
+  ['Unsaved changes', 'Nicht gespeicherte Änderungen'],
+  [
+    'You have unsaved changes. Do you want to leave without saving?',
+    'Du hast nicht gespeicherte Änderungen. Möchtest du ohne Speichern verlassen?',
+  ],
+  ['Keep editing', 'Weiter bearbeiten'],
+  ['Save and leave', 'Speichern und verlassen'],
+  ['Leave without saving', 'Ohne Speichern verlassen'],
   [
     'Your customisation is saved on your account and follows you to other devices.',
     'Deine Anpassung wird in deinem Konto gespeichert und folgt dir auf andere Geräte.',

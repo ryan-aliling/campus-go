@@ -17,7 +17,8 @@ import {
 } from '../mapStyle.js';
 import { Button } from './Button.jsx';
 import { Icon } from './icons.jsx';
-import { Dialog } from './Sheet.jsx';
+import { Dialog, Modal } from './Sheet.jsx';
+import { BEFORE_PAGE_CLOSE } from '../unsaved-navigation.js';
 
 const BASES = [
   ['follow', 'Follow the app'],
@@ -498,11 +499,14 @@ export function MapStyleSettings() {
   const toast = useToast();
   const { theme } = useSettings();
   const saved = useMapStyle();
+  const details = useRef(null);
   const [draft, setDraft] = useState(saved);
   const [picked, setPicked] = useState(null);
   const [editing, setEditing] = useState(null);
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
+  const [confirmExit, setConfirmExit] = useState(false);
+  const pendingExit = useRef(null);
   const lastSaved = useRef(saved);
   const lastTheme = useRef(THEMES.includes(saved.preset) ? saved.preset : THEMES[0]);
 
@@ -519,6 +523,42 @@ export function MapStyleSettings() {
   const defaults = withSonarOf(DEFAULT_MAP_STYLE, saved);
   const groups = colourGroups(shown, theme);
   const current = groups.flatMap((group) => group.items).find((c) => c.id === editing);
+
+  const handleSummaryClick = (event) => {
+    if (!details.current?.open || !changed) return;
+    event.preventDefault();
+    pendingExit.current = () => {
+      if (details.current) details.current.open = false;
+    };
+    setConfirmExit(true);
+  };
+
+  useEffect(() => {
+    const handlePageClose = (event) => {
+      if (!changed) return;
+      event.preventDefault();
+      pendingExit.current = event.detail?.confirm;
+      setConfirmExit(true);
+    };
+    window.addEventListener(BEFORE_PAGE_CLOSE, handlePageClose);
+    return () => window.removeEventListener(BEFORE_PAGE_CLOSE, handlePageClose);
+  }, [changed]);
+
+  const saveAndLeave = async () => {
+    setBusy('exit');
+    setError('');
+    try {
+      await saveMapStyle(api, shown);
+      const leave = pendingExit.current;
+      pendingExit.current = null;
+      setConfirmExit(false);
+      leave?.();
+    } catch (failure) {
+      setError(errorText(failure));
+    } finally {
+      setBusy('');
+    }
+  };
 
   const stepTheme = (way) => {
     const from = THEMES.includes(draft.preset) ? draft.preset : lastTheme.current;
@@ -548,8 +588,8 @@ export function MapStyleSettings() {
   };
 
   return (
-    <details className="card mapstyle" data-testid="map-style">
-      <summary className="mapstyle__summary">
+    <details ref={details} className="card mapstyle" data-testid="map-style">
+      <summary className="mapstyle__summary" onClick={handleSummaryClick}>
         <span className="display h3">{t('Customisation')}</span>
         <span className="small muted">{t('Tap to expand')}</span>
       </summary>
@@ -660,6 +700,32 @@ export function MapStyleSettings() {
             </Button>
           </div>
         </Dialog>
+      )}
+      {confirmExit && (
+        <Modal title={t('Unsaved changes')} onClose={() => setConfirmExit(false)}>
+          <div className="stack">
+            <p>{t('You have unsaved changes. Do you want to leave without saving?')}</p>
+            <div className="mapstyle__exit-actions">
+              <Button variant="ghost" onClick={() => setConfirmExit(false)}>
+                {t('Keep editing')}
+              </Button>
+              <Button variant="ok" busy={busy === 'exit'} onClick={saveAndLeave}>
+                {t('Save and leave')}
+              </Button>
+              <Button
+                className="btn--danger"
+                onClick={() => {
+                  const leave = pendingExit.current;
+                  pendingExit.current = null;
+                  setConfirmExit(false);
+                  leave?.();
+                }}
+              >
+                {t('Leave without saving')}
+              </Button>
+            </div>
+          </div>
+        </Modal>
       )}
     </details>
   );

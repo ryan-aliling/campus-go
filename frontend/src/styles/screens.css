@@ -614,7 +614,7 @@ ol.stack {
 
 /* The size of the live-position ball on screen, on every device and at every zoom. */
 :root {
-  --puck-orb: 42px;
+  --puck-orb: 48px;
 }
 
 /* The live position: a white low-poly ball (--puck-orb) with red lines between its facets, sitting on the

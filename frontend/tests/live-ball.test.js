@@ -5,6 +5,7 @@ import {
   metresPerPixel,
   nearestTurn,
   puckHtml,
+  puckScale,
   rollBall,
 } from '../src/map-pins.js';
 
@@ -37,6 +38,11 @@ describe('the live position on the map', () => {
     // At zoom 19 x 2.2 one pixel is about 0.09 m here; the sonar ring is drawn to scale with this.
     expect(metresPerPixel(HERE[0], 19 + Math.log2(2.2))).toBeCloseTo(0.0883, 3);
     expect(FOLLOW_ZOOM).toBeCloseTo(19 + Math.log2(2.2) + Math.log2(1.2), 6);
+  });
+
+  it('keeps the live ball easy to spot when zoomed out', () => {
+    expect(puckScale(FOLLOW_ZOOM)).toBe(1);
+    expect(puckScale(FOLLOW_ZOOM - 10)).toBe(0.55);
   });
 
   it('rolls the ball the way it moves: walking north turns its front up', () => {

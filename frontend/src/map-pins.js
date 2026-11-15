@@ -38,11 +38,12 @@ export const CHEVRON = 'M6.5 15.5 12 8l5.5 7.5';
 export const FOLLOW_ZOOM = 19 + Math.log2(2.2 * 1.2);
 /** How far below the middle of the map the ball is shown while following, as a share of the map's height. */
 export const FOLLOW_LOW = 0.2;
-const SMALLEST = 0.3;
+const SMALLEST = 0.55;
 
 /**
  * How large the ball is drawn at a Leaflet zoom: full size in the following view and closer, smaller
- * (down to 30 %) when zoomed out, so a visitor who zoomed away is nudged to tap Re-center.
+ * (down to 55 %) when zoomed out, so it remains easy to spot while still indicating distance from the
+ * following view.
  */
 export const puckScale = (zoom) => Math.min(1, Math.max(SMALLEST, 2 ** (zoom - FOLLOW_ZOOM)));
 
@@ -57,9 +58,9 @@ const M_PER_DEG = EARTH_M / 360;
 export const metresPerPixel = (lat, zoom) =>
   (EARTH_M * Math.cos((lat * Math.PI) / 180)) / 2 ** (zoom + 8);
 
-/** Box of the ball marker in pixels (the ball is 28 or 42 px, see --puck-orb); its middle sits on the position. */
-export const PUCK_SIZE = [44, 44];
-export const PUCK_ANCHOR = [22, 22];
+/** Box of the ball marker in pixels (the ball is 48 px, see --puck-orb); its middle sits on the position. */
+export const PUCK_SIZE = [52, 52];
+export const PUCK_ANCHOR = [26, 26];
 /** Box of the ground marker (sonar range ring and direction wedge) in pixels; its middle sits on the position. */
 export const GROUND_SIZE = 96;
 

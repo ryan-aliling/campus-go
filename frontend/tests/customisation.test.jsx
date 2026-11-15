@@ -155,4 +155,42 @@ describe('BR48 Customisation', () => {
     );
     expect(themeName()).toHaveTextContent('Classic');
   });
+
+  it('BR48 confirms before closing customisation with unsaved changes', async () => {
+    const user = await openCard();
+    await user.click(screen.getByRole('button', { name: 'Next map theme' }));
+
+    const details = screen.getByTestId('map-style');
+    await user.click(screen.getByText('Customisation'));
+    expect(screen.getByRole('alertdialog', { name: 'Unsaved changes' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save and leave' })).toHaveClass('btn--ok');
+    expect(screen.getByRole('button', { name: 'Leave without saving' })).toHaveClass('btn--danger');
+    expect(details).toHaveAttribute('open');
+
+    await user.click(screen.getByRole('button', { name: 'Keep editing' }));
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(details).toHaveAttribute('open');
+
+    await user.click(screen.getByText('Customisation'));
+    await user.click(screen.getByRole('button', { name: 'Save and leave' }));
+    expect(api.saveMapStyle).toHaveBeenCalled();
+    expect(details).not.toHaveAttribute('open');
+  });
+
+  it('BR48 confirms before the page close button leaves unsaved customisation', async () => {
+    const user = await openCard();
+    await user.click(screen.getByRole('button', { name: 'Next map theme' }));
+
+    const event = new CustomEvent('campusgo:before-page-close', {
+      cancelable: true,
+      detail: { confirm: vi.fn() },
+    });
+    await act(() => window.dispatchEvent(event));
+
+    expect(event.defaultPrevented).toBe(true);
+    expect(screen.getByRole('alertdialog', { name: 'Unsaved changes' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Save and leave' }));
+    expect(api.saveMapStyle).toHaveBeenCalled();
+    expect(event.detail.confirm).toHaveBeenCalled();
+  });
 });
